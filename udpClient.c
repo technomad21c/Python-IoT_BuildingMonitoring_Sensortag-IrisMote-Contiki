@@ -39,7 +39,7 @@
 
 #define UDP_CLIENT_PORT 4321
 #define UDP_SERVER_PORT 1234
-#define SENSOR_NODE_NO  2
+#define SENSOR_NODE_NO  1
 
 
 #define DEBUG DEBUG_PRINT
