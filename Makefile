@@ -1,4 +1,4 @@
-all: udpClient udpServer
+all: sensornode gatewaynode
 APPS=servreg-hack
 CONTIKI=../..
 

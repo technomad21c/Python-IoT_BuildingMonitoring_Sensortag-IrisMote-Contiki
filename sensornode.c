@@ -28,44 +28,52 @@
  */
 
 #include "contiki.h"
-#include "contiki-lib.h"
-#include "contiki-net.h"
+#include "lib/random.h"
+#include "sys/ctimer.h"
 #include "net/uip.h"
-#include "net/rpl/rpl.h"
-
-#include "net/netstack.h"
+#include "net/uip-ds6.h"
+#include "net/uip-udp-packet.h"
+#include "sys/ctimer.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+
+#define UDP_CLIENT_PORT 4321
+#define UDP_SERVER_PORT 1234
+#define SENSOR_NODE_NO  1
+
 
 #define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
-#define UIP_IP_BUF   ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
+#ifndef PERIOD
+#define PERIOD 10
+#endif
 
-#define UDP_CLIENT_PORT	4321
-#define UDP_SERVER_PORT	1234
 
+#define SEND_INTERVAL		(PERIOD * CLOCK_SECOND)
+#define SEND_TIME		(random_rand() % (SEND_INTERVAL))
+#define MAX_PAYLOAD_LEN		50
 
-static struct uip_udp_conn *server_conn;
+static struct uip_udp_conn *client_conn;
+static uip_ipaddr_t server_ipaddr;
 
-PROCESS(udp_server_process, "UDP server process");
-AUTOSTART_PROCESSES(&udp_server_process);
+/*---------------------------------------------------------------------------*/
+PROCESS(udp_client_process, "UDP client process");
+AUTOSTART_PROCESSES(&udp_client_process);
 /*---------------------------------------------------------------------------*/
 static void
-tcpip_handler(void)
+send_packet(void *ptr)
 {
-  char *appdata; //a poniter to the received data
+  int temperature, illuminance, battery;
+  char buf[MAX_PAYLOAD_LEN];
+  adc_init();
+  temperature = get_temp();
+  illuminance = get_light();
+  battery = get_battery();
 
-  if(uip_newdata()) {
-    appdata = (char *)uip_appdata;
-    appdata[uip_datalen()] = 0;
-    // PRINT6ADDR(&UIP_IP_BUF->srcipaddr); //print the IP address of the source
-    // PRINTF(" - sending >> '%s'\n", appdata);
-    PRINTF("%s\n", appdata);
-    //PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
-  }
+  sprintf(buf, "sensorno:%d, temperature:%d, light:%d, battery:%d", SENSOR_NODE_NO, temperature, illuminance, battery);
+  uip_udp_packet_sendto(client_conn, buf, strlen(buf),
+                        &server_ipaddr, UIP_HTONS(UDP_SERVER_PORT));
 }
 /*---------------------------------------------------------------------------*/
 static void
@@ -74,10 +82,11 @@ print_local_addresses(void)
   int i;
   uint8_t state;
 
-  PRINTF("Server IPv6 addresses: ");
+  PRINTF("Client IPv6 addresses: ");
   for(i = 0; i < UIP_DS6_ADDR_NB; i++) {
     state = uip_ds6_if.addr_list[i].state;
-    if(state == ADDR_TENTATIVE || state == ADDR_PREFERRED) {
+    if(uip_ds6_if.addr_list[i].isused &&
+       (state == ADDR_TENTATIVE || state == ADDR_PREFERRED)) {
       PRINT6ADDR(&uip_ds6_if.addr_list[i].ipaddr);
       PRINTF("\n");
       /* hack to make address "final" */
@@ -89,54 +98,51 @@ print_local_addresses(void)
 }
 /*---------------------------------------------------------------------------*/
 static void
-rpl_setup(void)
-{
-  uip_ipaddr_t ipaddr;
-  rpl_dag_t *dag;
-  dag = rpl_set_root(RPL_DEFAULT_INSTANCE,(uip_ip6addr_t *)&ipaddr);
-  uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 0); //za prefiks
-  rpl_set_prefix(dag, &ipaddr, 64);
-  PRINTF("RPL dag kreiran\n");
-}
-/*---------------------------------------------------------------------------*/
-static void
 set_global_address(void)
 {
   uip_ipaddr_t ipaddr;
 
-  uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 0); // prefiks je 0xaaaa::0
-  uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr); // dobija se dodavanjem link-local adrese na prefiks
-  uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF); // registrovanje adrese
+  uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 0);
+  uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
+  uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
+
+  //uip_ip6addr(&server_ipaddr, 0xfe80, 0, 0, 0, 0x021a, 0x4c00, 0x13e3, 0x6f8e); 
+  uip_ip6addr(&server_ipaddr, 0xfe80, 0, 0, 0, 0x021a, 0x4c00, 0x13e3, 0x6960);
+//^podesiti tako da odgovara stvarnoj adresi servera
 }
 /*---------------------------------------------------------------------------*/
-PROCESS_THREAD(udp_server_process, ev, data)
+PROCESS_THREAD(udp_client_process, ev, data)
 {
+  static struct etimer periodic;
+  static struct ctimer backoff_timer;
 
   PROCESS_BEGIN();
+
   set_global_address();
-  print_local_addresses(); // Server address print
-  rpl_setup();
 
-  /* Ovim se omogucava 100% duty cycle - tj radio je uvek ukljucen
- kako bi se povecala sansa za uspesan prijem paketa */
-  NETSTACK_MAC.off(1);
+  PRINTF("UDP client proces startovan\n");
 
-  server_conn = udp_new(NULL, UIP_HTONS(UDP_CLIENT_PORT), NULL);
-  if(server_conn == NULL) {
-    PRINTF("There is no plug of connection, I'm out of the process!\n");
+  print_local_addresses();
+
+  client_conn = udp_new(NULL, UIP_HTONS(UDP_SERVER_PORT), NULL); 
+  if(client_conn == NULL) {
+    PRINTF("Nema UDP konekcije, izlazim iz procesa!\n");
     PROCESS_EXIT();
   }
-  udp_bind(server_conn, UIP_HTONS(UDP_SERVER_PORT));
+  udp_bind(client_conn, UIP_HTONS(UDP_CLIENT_PORT)); 
 
-  PRINTF("Created server! ");
-  PRINTF(" local/remote port %u/%u\n", UIP_HTONS(server_conn->lport),
-         UIP_HTONS(server_conn->rport));
+  PRINTF("Konektovan na server ");
+  PRINT6ADDR(&client_conn->ripaddr);
+  PRINTF(" local/remote port %u/%u\n",
+    UIP_HTONS(client_conn->lport), UIP_HTONS(client_conn->rport));
 
+  etimer_set(&periodic, SEND_INTERVAL);
   while(1) {
     PROCESS_YIELD();
-    if(ev == tcpip_event) {
-      tcpip_handler();
-    } 
+    if(etimer_expired(&periodic)) {
+      etimer_reset(&periodic);
+      ctimer_set(&backoff_timer, SEND_TIME, send_packet, NULL);
+    }
   }
 
   PROCESS_END();
