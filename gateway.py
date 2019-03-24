@@ -9,10 +9,7 @@ except:
     print("Failed to connect on", device)
 
 while(True):
-    try:
-        data = iris.readline()
-        print(data)
-    except:
-        print("Failed to get data from Iris Gateway!")
+    data = iris.readline()
+    print(data)
 
 
