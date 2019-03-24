@@ -63,9 +63,8 @@ tcpip_handler(void)
     appdata[uip_datalen()] = 0;
     // PRINT6ADDR(&UIP_IP_BUF->srcipaddr); //print the IP address of the source
     // PRINTF(" - sending >> '%s'\n", appdata);
-    PRINTF("%s << sending - ", appdata);
-    PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
-    PRINTF("\n");
+    PRINTF("%s\n", appdata);
+    //PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
   }
 }
 /*---------------------------------------------------------------------------*/
@@ -135,7 +134,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
 
   while(1) {
     PROCESS_YIELD();
-    PRINTF("wait for data...");
     if(ev == tcpip_event) {
       tcpip_handler();
     } 
