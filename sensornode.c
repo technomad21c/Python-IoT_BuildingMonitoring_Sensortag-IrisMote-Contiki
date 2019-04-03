@@ -40,6 +40,7 @@
 #define UDP_CLIENT_PORT 4321
 #define UDP_SERVER_PORT 1234
 #define SENSOR_NODE_NO  1
+#define BATTERY_FULL    3.6
 
 
 #define DEBUG DEBUG_PRINT
@@ -66,12 +67,16 @@ send_packet(void *ptr)
 {
   int temperature, illuminance, battery;
   char buf[MAX_PAYLOAD_LEN];
+  
+  adc_init();
+  battery = get_battery();
+  
   adc_init();
   temperature = get_temp();
   illuminance = get_light();
-  battery = get_battery();
-
-  sprintf(buf, "sensorno:%d, temperature:%d, light:%d, battery:%d", SENSOR_NODE_NO, temperature, illuminance, battery);
+  
+  
+  sprintf(buf, "sensorno:%d, temperature:%d, light:%d, battery:%d", SENSOR_NODE_NO, temperature, illuminance, 100 - (BATTERY_FULL - battery) * 10);
   uip_udp_packet_sendto(client_conn, buf, strlen(buf),
                         &server_ipaddr, UIP_HTONS(UDP_SERVER_PORT));
 }
