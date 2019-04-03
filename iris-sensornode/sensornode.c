@@ -76,7 +76,7 @@ send_packet(void *ptr)
   illuminance = get_light();
   
   
-  sprintf(buf, "sensorno:%d, temperature:%d, light:%d, battery:%d", SENSOR_NODE_NO, temperature, illuminance, 100 - (BATTERY_FULL - battery) * 10);
+  sprintf(buf, "sensorno:%d, temperature:%d, light:%d, battery:%d", SENSOR_NODE_NO, temperature, illuminance, battery);
   uip_udp_packet_sendto(client_conn, buf, strlen(buf),
                         &server_ipaddr, UIP_HTONS(UDP_SERVER_PORT));
 }
