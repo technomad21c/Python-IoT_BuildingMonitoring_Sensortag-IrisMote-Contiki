@@ -42,25 +42,59 @@ class Gateway:
 
             data  = iris.convert(recv)  # converted into dictionary type
             data['temperature'] = int(data['temperature'])
-            data['luminance'] = int(data['luminance'[)
+            data['luminance'] = int(data['luminance'])
             data['battery'] = int(data['battery'])
             print(data)
             #print("Temperature: ", self.convertTemperature(int(data['temperature'])))
             #print("Light: ", self.convertIlluminance(int(data['light'])))
             #print("Battery: ", self.convertBattery(int(data['battery'])))
-            sensorData = [ {
-                        "measurement": "memory", 
+
+            datatemperature = [ {
+                        "measurement": "temperature",
+                        "tags": {
+                            "sensor-type": data['sensortype'],
+                            "sensor-number": data['sensor-number'],
+                        },
+                        "field": {
+                            "value": data['temperature'],
+                        }
+                } ]
+
+            dataluminance = [ {
+                        "measurement": "luminance",
+                        "tags": {
+                            "sensor-type": data['sensortype'],
+                            "sensor-number": data['sensor-number'],
+                        },
+                        "field": {
+                            "value": data['luminance'],
+                        }
+                } ]
+
+            databattery = [ {
+                        "measurement": "battery",
+                        "tags": {
+                            "sensor-type": data['sensortype'],
+                            "sensor-number": data['sensor-number'],
+                        },
+                        "field": {
+                            "value": data['battery'],
+                        }
+                } ]
+
+            dataE110 = [ {
+                        "measurement": "E110", 
                         "tags": { 
-                            "sensor":data['sensorno'] 
+                            "sensor-type": data['sensortype'],
+                            "sensor-number": data['sensor-number'],
                         }, 
                         "fields": {
                             "temperature": data['temperature'],
-                            "light": data['light'],
+                            "luminance": data['light'],
                             "battery": data['battery'],
                         } 
                     } ]
    
-            '''
             sensorData = [ {
                         "measurement": "memory", 
                         "tags": { 
@@ -73,7 +107,7 @@ class Gateway:
                         }
                     }
                   ]
-            '''
+
             #self.client.write_points(sensorData) 
             #print("Sensor data was sent to InflubDB")
     
@@ -101,7 +135,7 @@ class Gateway:
         self.send()
 
 if __name__ == '__main__':
-    propertyfile = "gateway.properties" 
+    propertyfile = "../config/gateway.properties" 
     gw = Gateway()
     gw.initialize(propertyfile)
     gw.start()
