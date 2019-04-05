@@ -1,0 +1,19 @@
+obj_native/framer-802154.o: \
+ ../contiki-iris-examples//core/net/mac/framer-802154.c \
+ ../contiki-iris-examples//core/./net/mac/framer-802154.h \
+ ../contiki-iris-examples//core/./net/mac/framer.h \
+ ../contiki-iris-examples//core/./net/mac/frame802154.h \
+ ../contiki-iris-examples//platform/native/./contiki-conf.h \
+ ../contiki-iris-examples//platform/native/./ctk/ctk-curses.h \
+ ../contiki-iris-examples//core/./net/rime/rimeaddr.h \
+ ../contiki-iris-examples//core/./net/packetbuf.h \
+ ../contiki-iris-examples//core/./lib/random.h
+ ../contiki-iris-examples//core/net/mac/framer-802154.c :
+ ../contiki-iris-examples//core/./net/mac/framer-802154.h :
+ ../contiki-iris-examples//core/./net/mac/framer.h :
+ ../contiki-iris-examples//core/./net/mac/frame802154.h :
+ ../contiki-iris-examples//platform/native/./contiki-conf.h :
+ ../contiki-iris-examples//platform/native/./ctk/ctk-curses.h :
+ ../contiki-iris-examples//core/./net/rime/rimeaddr.h :
+ ../contiki-iris-examples//core/./net/packetbuf.h :
+ ../contiki-iris-examples//core/./lib/random.h :
