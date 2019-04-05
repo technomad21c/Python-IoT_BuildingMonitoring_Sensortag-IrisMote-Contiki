@@ -1,2 +1,8 @@
 *.pyc
 __pycache__
+/iris-sensornode/*
+!/iris-sensornode/sensornode.c
+!/iris-sensornode/Makefile
+/iris-gateway/*
+!/iris-gateway/gatewaynode.c
+!/iris-gateway/Makefile
