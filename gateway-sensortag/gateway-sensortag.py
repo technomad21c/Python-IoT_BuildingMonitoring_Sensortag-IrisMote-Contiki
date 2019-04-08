@@ -1,6 +1,7 @@
 import serial
 from influxdb import InfluxDBClient
 from yamlreader import YamlReader
+from sensortag import SensorTag
 
 class Gateway:
     def __init__(self):
@@ -20,22 +21,22 @@ class Gateway:
         env = yr.read(filename) 
 
         self.humidity['service'] = env['UUID']['humidity']['service']
-        self.humidity['data'] = env['UUID']['humidity']['data']
-        self.humidity['conf'] = env['UUID']['humidity']['conf']
-        self.humidity['period'] = env['UUID']['humidity']['period']
-        self.humidity['format'] = env['UUID']['humidity']['format']
+        self.humidity['data']    = env['UUID']['humidity']['data']
+        self.humidity['conf']    = env['UUID']['humidity']['conf']
+        self.humidity['period']  = env['UUID']['humidity']['period']
+        self.humidity['format']  = env['UUID']['humidity']['format']
 
         self.barometer['service'] = env['UUID']['barometer']['service']
-        self.barometer['data'] = env['UUID']['barometer']['data']
-        self.barometer['conf'] = env['UUID']['barometer']['conf']
-        self.barometer['period'] = env['UUID']['barometer']['period']
-        self.barometer['format'] = env['UUID']['barometer']['format']
+        self.barometer['data']    = env['UUID']['barometer']['data']
+        self.barometer['conf']    = env['UUID']['barometer']['conf']
+        self.barometer['period']  = env['UUID']['barometer']['period']
+        self.barometer['format']  = env['UUID']['barometer']['format']
 
         self.light['service'] = env['UUID']['light']['service']
-        self.light['data'] = env['UUID']['light']['data']
-        self.light['conf'] = env['UUID']['light']['conf']
-        self.light['period'] = env['UUID']['light']['period']
-        self.light['format'] = env['UUID']['light']['format']
+        self.light['data']    = env['UUID']['light']['data']
+        self.light['conf']    = env['UUID']['light']['conf']
+        self.light['period']  = env['UUID']['light']['period']
+        self.light['format']  = env['UUID']['light']['format']
 
         self.DB_ADDR = env['db_addr']
         self.DB_PORT = env['db_port']
