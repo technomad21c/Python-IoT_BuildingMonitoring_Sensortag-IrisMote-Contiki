@@ -5,11 +5,14 @@ import math
 import time
 from decimal import Decimal
 
-class SensorTag:
+class SensorTag(object):
     def __init__(self):
         self.UUID = {}
         self.name = None
         self.address = None
+
+        self.device = None
+        self.confHumidity = None
 
     def setUUID(self, UUID):
         self.UUID = UUID
@@ -22,12 +25,16 @@ class SensorTag:
         self.address = address
 
     def connect(self):
-        print("connecting to sensortags")
+        print("trying to connect to a sensortag: " + self.name + "(" + self.address + ")")
        
         try: 
-            self.device = Peripheral(self.address, "public")
-            print("[ERROR] Connection to " + self.name + "(" + self.address + ") failed.")
-    
+            self.device = btle.Peripheral(self.address, "public")
+        except Exception:
+            print("conection failed!")
+        else:
+            print("successfully connected to sensortag...")
+      
+        try:
             self.serviceHumidity  = self.device.getServiceByUUID(self.UUID['humidity']['service'])
             self.dataHumidity     = self.device.getCharacteristics(self.UUID['humidity']['data'])
             self.confHumidity     = self.device.getCharacteristics(self.UUID['humidity']['conf'])
@@ -42,6 +49,7 @@ class SensorTag:
             self.dataLight        = self.device.getCharacteristics(self.UUID['light']['data'])
             self.confLight        = self.device.getCharacteristics(self.UUID['light']['conf'])
             self.formatLight      = self.device.getCharacteristics(self.UUID['light']['format'])
+
         except Exception:
             print("service discovery failed!")
             self.disconnect()
@@ -64,4 +72,15 @@ class SensorTag:
         return (humidityValue, barometerValue, lightValue)
 
 if __name__ == "__main__":
-    UUID =  { 'humidity': {'service': '', 'data': ' ', 'conf': ' ', 'format': ' ', 'enable': ' '}}
+    from yamlreader import YamlReader
+    yr = YamlReader()
+    dict = yr.read("gateway.properties")
+    for key, value in dict.items():
+        print(key + " : " + str(value)) 
+
+    st = SensorTag()
+    st.setUUID(dict['UUID'])
+    st.setAddress(dict['sensortags'][0]['sensortag']['name'], dict['sensortags'][0]['sensortag']['address']) 
+
+    st.connect()
+    #st.enable()
