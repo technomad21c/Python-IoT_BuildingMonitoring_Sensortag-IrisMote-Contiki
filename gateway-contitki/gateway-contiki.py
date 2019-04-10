@@ -1,4 +1,5 @@
 import serial
+import math
 from influxdb import InfluxDBClient
 from yamlreader import YamlReader
 from irisdata import IrisData
@@ -41,6 +42,7 @@ class Gateway:
 
             data  = iris.convert(recv)  # converted into dictionary type
             print(data)
+            print("Temperature: ", self.convertTemperature(int(data['temperature'])))
             sensorData = [ {
                         "measurement": "memory", 
                         "tags": { 
@@ -67,9 +69,15 @@ class Gateway:
                     }
                   ]
             '''
-            self.client.write_points(sensorData) 
+            #self.client.write_points(sensorData) 
             #print("Sensor data was sent to InflubDB")
     
+    def convertTemperature(self, DN):
+        Rthr = 10000 * (1023 - DN) / DN
+        lnRthr = math.log(Rthr)
+        TdegC = 1 / (0.001010024 + 0.000242127 * lnRthr + 0.000000146 * math.pow(lnRthr, 3)) - 273.15 
+        return round(TdegC, 2)
+
     def initialize(self, propertyfile):
         self.setEnvVariables(propertyfile)
 
