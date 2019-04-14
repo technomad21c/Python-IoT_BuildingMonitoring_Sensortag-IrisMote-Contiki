@@ -89,7 +89,7 @@ class SensorTag(object):
 
         battery = ord(self.dataBattery.read())
 
-        return (humiTemp,  humiRH, baroTemp, baroPress, optiValue, battery)
+        return (round(humiTemp,1), round(humiRH,1), round(baroTemp,1), round(baroPress,1), round(optiValue,1), battery)
 
 if __name__ == "__main__":
     from yamlreader import YamlReader
