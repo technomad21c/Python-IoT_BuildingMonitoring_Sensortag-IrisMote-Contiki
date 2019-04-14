@@ -1,7 +1,7 @@
 import serial
 from influxdb import InfluxDBClient
 from yamlreader import YamlReader
-from sensortag import SensorTag
+from sensortag import Sensortag
 
 class Gateway:
     def __init__(self):
@@ -15,6 +15,8 @@ class Gateway:
 
         self.connectedDevice = None
         self.dbClient = None
+   
+        self.sensortags = []
 
     def setEnvVariables(self, filename):
         yr = YamlReader()
@@ -41,60 +43,47 @@ class Gateway:
         self.DB_ADDR = env['db_addr']
         self.DB_PORT = env['db_port']
 
-    def connectGateway(self):
-        try:
-            print("Trying...", self.DEVICE)
-            self.connectedDevice = serial.Serial(self.DEVICE,self.BAUDRATE) 
-        except:
-            print("Failed to connect on", self.DEVICE)
+        for i in range(len(env['sensortags'])):
+            sensortag = Sensortag()
+            sensortag.setUUID(env['UUID'])
+            sensortag.setAddress(env['sensortags'][i]['sensortag']['name'], env['sensortags'][i]['sensortag']['address'])
+
+            self.sensortags.append(sensortag)
+            print("init: ", sensortag)
+        
+    def connectSensortags(self):
+        for sensortag in self.sensortags: 
+            print("connect to sensortag: ", sensortag)
+            sensortag.connect()
+            sensortag.enable()
 
     def connectDB(self):
         self.client = InfluxDBClient(host=self.DB_ADDR, port=self.DB_PORT)
         self.client.switch_database('test')
 
     def send(self): 
-        iris = IrisData()
-
         while(True):
-            recv = self.connectedDevice.readline().decode(errors='ignore')
-            #print(recv)
-
-            data  = iris.convert(recv)  # converted into dictionary type
-            print(data)
-            sensorData = [ {
-                        "measurement": "memory", 
+            for sensortag in self.sensortags:
+                data = sensortag.read()
+                print(data)
+                sensorData = [ {
+                        "measurement": "humidity", 
                         "tags": { 
-                            "sensor":data['sensorno'] 
+                            "sensor-type": data['sensortype'], 
+                            "sensor-number": data['sensornumber'] 
                         }, 
                         "fields": {
-                            "temperature": data['temperature'],
-                            "light": data['light'],
-                            "battery": data['battery'],
+                            "value": data['humidity'],
                         } 
                     } ]
    
-            '''
-            sensorData = [ {
-                        "measurement": "memory", 
-                        "tags": { 
-                            "sensor": 1
-                        }, 
-                        "fields": {
-                            "temperature": 21,
-                            "light": 700,
-                            "humidity": 50,
-                        }
-                    }
-                  ]
-            '''
-            self.client.write_points(sensorData) 
-            #print("Sensor data was sent to InflubDB")
+                #self.client.write_points(sensorData) 
     
     def initialize(self, propertyfile):
         self.setEnvVariables(propertyfile)
 
     def start(self):
-        self.connectGateway()
+        self.connectSensortags()
         self.connectDB()
         self.send()
 
@@ -108,4 +97,4 @@ if __name__ == '__main__':
     gw = Gateway()
     gw.initialize(propertyfile)
     gw.printEnvVariables()
-    #gw.start()
+    gw.start()

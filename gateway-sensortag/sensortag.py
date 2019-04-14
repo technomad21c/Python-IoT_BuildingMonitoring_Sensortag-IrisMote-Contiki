@@ -5,7 +5,7 @@ import math
 import time
 from decimal import Decimal
 
-class SensorTag(object):
+class Sensortag(object):
     def __init__(self):
         self.UUID = {}
         self.name = None
@@ -13,6 +13,8 @@ class SensorTag(object):
 
         self.device = None
         self.confHumidity = None
+        
+        self.data = {}
 
     def setUUID(self, UUID):
         self.UUID = UUID
@@ -66,30 +68,29 @@ class SensorTag(object):
         self.confHumidity.write(struct.pack("B", 0x01))
         self.confBarometer.write(struct.pack("B", 0x01))
         self.confLight.write(struct.pack("B", 0x01))
-     
-        '''
-        self.confHumidity.write(struct.pack("<h", int(self.UUID['humidity']['enable'], 16)))
-        self.confBarometer.write(struct.pack("<h", int(self.UUID['barometer']['enable'], 16)))
-        self.confLight.write(struct.pack("<h", int(self.UUID['light']['enable'], 16)))
-        '''
        
     def read(self):
         (rawT, rawH)  = struct.unpack(self.formatHumidity, self.dataHumidity.read()) 
         humiTemp = -46.85 + 175.72 * (rawT / 65536.0)
-        humiRH = -6.0 + 125.0 * ((rawH & 0xFFFC) / 65536.0)
+        #humiRH = -6.0 + 125.0 * ((rawH & 0xFFFC) / 65536.0)
+        self.data['humidity'] = round( -6.0 + 125.0 * ((rawH & 0xFFFC) / 65536.0), 1)
 
         (tL, tM, tH, pL, pM, pH) = struct.unpack(self.formatBarometer,self.dataBarometer.read()) 
         baroTemp = (tH*65536 + tM*256 + tL) / 100.0
-        baroPress = (pH*65536 + pM*256 + pL) / 100.0
+        #baroPress = (pH*65536 + pM*256 + pL) / 100.0
+        self.data['barometicpressure'] = round((pH*65536 + pM*256 + pL) / 100.0, 1)
 
         raw = struct.unpack(self.formatLight, self.dataLight.read())[0]
         m = raw & 0xFFF
         e = (raw & 0xFF00) >> 12
-        optiValue = 0.01 * (m << 2)
+        #optiValue = 0.01 * (m << 2)
+        self.data['luminance'] = round(0.01 * (m << 2),1)
 
-        battery = ord(self.dataBattery.read())
+        self.data['battery'] = ord(self.dataBattery.read())
 
-        return (round(humiTemp,1), round(humiRH,1), round(baroTemp,1), round(baroPress,1), round(optiValue,1), battery)
+        self.data['sensortype'] = "sensortag"
+        self.data['sensornumber'] = "sensortag"
+        return self.data
 
 if __name__ == "__main__":
     from yamlreader import YamlReader
@@ -98,7 +99,7 @@ if __name__ == "__main__":
     for key, value in dict.items():
         print(key + " : " + str(value)) 
 
-    st = SensorTag()
+    st = Sensortag()
     st.setUUID(dict['UUID'])
     st.setAddress(dict['sensortags'][0]['sensortag']['name'], dict['sensortags'][0]['sensortag']['address']) 
 
@@ -106,3 +107,4 @@ if __name__ == "__main__":
     st.enable()
     while True:
         print("sensor value: ", st.read())
+        time.sleep(10)
