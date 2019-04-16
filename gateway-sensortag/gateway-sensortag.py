@@ -67,7 +67,7 @@ class Gateway:
             for sensortag in self.sensortags:
                 data = sensortag.read()
                 print(data)
-                sensorData = [ {
+                datahumidity = [ {
                         "measurement": "humidity", 
                         "tags": { 
                             "sensor-type": data['sensortype'], 
@@ -78,7 +78,57 @@ class Gateway:
                         } 
                     } ]
    
-                #self.client.write_points(sensorData) 
+                databarometicpressure = [ {
+                        "measurement": "barometicpressure", 
+                        "tags": { 
+                            "sensor-type": data['sensortype'], 
+                            "sensor-number": data['sensornumber'] 
+                        }, 
+                        "fields": {
+                            "value": data['barometicpressure'],
+                        } 
+                    } ]
+
+                dataluminance = [ {
+                        "measurement": "luminance", 
+                        "tags": { 
+                            "sensor-type": data['sensortype'], 
+                            "sensor-number": data['sensornumber'] 
+                        }, 
+                        "fields": {
+                            "value": data['luminance'],
+                        } 
+                    } ]
+
+                databattery = [ {
+                        "measurement": "battery", 
+                        "tags": { 
+                            "sensor-type": data['sensortype'], 
+                            "sensor-number": data['sensornumber'] 
+                        }, 
+                        "fields": {
+                            "value": data['battery'],
+                        } 
+                    } ]
+
+                datae110= [ {
+                        "measurement": "E110", 
+                        "tags": { 
+                            "sensor-type": data['sensortype'], 
+                            "sensor-number": data['sensornumber'] 
+                        }, 
+                        "fields": {
+                            "humidity": data['humidity'],
+                            "barometicpressure": data['barometicpressure'],
+                            "luminance": data['luminance'],
+                            "battery": data['battery'],
+                        } 
+                    } ]
+                self.client.write_points(datahumidity)
+                self.client.write_points(databarometicpressure)
+                self.client.write_points(dataluminance)
+                self.client.write_points(databattery)
+                self.client.write_points(datae110)
             time.sleep(60)
     
     def initialize(self, propertyfile):
