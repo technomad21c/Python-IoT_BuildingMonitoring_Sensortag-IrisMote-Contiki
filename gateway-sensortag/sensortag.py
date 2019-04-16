@@ -7,6 +7,7 @@ from decimal import Decimal
 
 class Sensortag(object):
     def __init__(self):
+        self.sensortype = "sensortag"
         self.UUID = {}
         self.name = None
         self.address = None
@@ -88,8 +89,8 @@ class Sensortag(object):
 
         self.data['battery'] = ord(self.dataBattery.read())
 
-        self.data['sensortype'] = "sensortag"
-        self.data['sensornumber'] = "sensortag"
+        self.data['sensortype'] = self.sensortype
+        self.data['sensornumber'] = self.name
         return self.data
 
 if __name__ == "__main__":

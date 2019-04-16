@@ -1,4 +1,5 @@
 import serial
+import time
 from influxdb import InfluxDBClient
 from yamlreader import YamlReader
 from sensortag import Sensortag
@@ -78,6 +79,7 @@ class Gateway:
                     } ]
    
                 #self.client.write_points(sensorData) 
+            time.sleep(10)
     
     def initialize(self, propertyfile):
         self.setEnvVariables(propertyfile)
