@@ -79,7 +79,7 @@ class Gateway:
                     } ]
    
                 #self.client.write_points(sensorData) 
-            time.sleep(10)
+            time.sleep(60)
     
     def initialize(self, propertyfile):
         self.setEnvVariables(propertyfile)
@@ -89,14 +89,9 @@ class Gateway:
         self.connectDB()
         self.send()
 
-    def printEnvVariables(self):
-        print("UUID")
-        print("--- Humidity ---")
-        print("service: " + self.sensortagUUID['humidity']['service'])
-
 if __name__ == '__main__':
+    print("Smart Building Monitoring starts...")
     propertyfile = "gateway.properties" 
     gw = Gateway()
     gw.initialize(propertyfile)
-    gw.printEnvVariables()
     gw.start()
