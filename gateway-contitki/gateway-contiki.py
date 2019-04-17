@@ -41,10 +41,13 @@ class Gateway:
             #print(recv)
 
             data  = iris.convert(recv)  # converted into dictionary type
+            data['temperature'] = int(data['temperature'])
+            data['luminance'] = int(data['luminance'[)
+            data['battery'] = int(data['battery'])
             print(data)
-            print("Temperature: ", self.convertTemperature(int(data['temperature'])))
-            print("Light: ", self.convertIlluminance(int(data['light'])))
-            print("Battery: ", self.convertBattery(int(data['battery'])))
+            #print("Temperature: ", self.convertTemperature(int(data['temperature'])))
+            #print("Light: ", self.convertIlluminance(int(data['light'])))
+            #print("Battery: ", self.convertBattery(int(data['battery'])))
             sensorData = [ {
                         "measurement": "memory", 
                         "tags": { 
