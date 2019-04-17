@@ -39,6 +39,7 @@
 
 #define UDP_CLIENT_PORT 4321
 #define UDP_SERVER_PORT 1234
+#define SENSOR_TYPE	"iris"
 #define SENSOR_NODE_NO  1
 #define BATTERY_FULL    3.6
 
@@ -76,7 +77,7 @@ send_packet(void *ptr)
   illuminance = get_light();
   
   
-  sprintf(buf, "sensorno:%d, temperature:%d, light:%d, battery:%d", SENSOR_NODE_NO, temperature, illuminance, battery);
+  sprintf(buf, "sensortype:%s, sensor-number:%d, temperature:%d, luminance:%d, battery:%d", SENSOR_TYPE, SENSOR_NODE_NO, temperature, illuminance, battery);
   uip_udp_packet_sendto(client_conn, buf, strlen(buf),
                         &server_ipaddr, UIP_HTONS(UDP_SERVER_PORT));
 }
