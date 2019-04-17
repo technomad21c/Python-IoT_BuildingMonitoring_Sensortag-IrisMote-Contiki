@@ -3,6 +3,6 @@ __pycache__
 /iris-sensornode/*
 !/iris-sensornode/sensornode.c
 !/iris-sensornode/Makefile
-/iris-gateway/*
+/iris-gatewaynode/*
 !/iris-gateway/gatewaynode.c
 !/iris-gateway/Makefile
