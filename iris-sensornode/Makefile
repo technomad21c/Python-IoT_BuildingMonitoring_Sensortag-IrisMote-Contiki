@@ -1,6 +1,6 @@
 all: sensornode gatewaynode
 APPS=servreg-hack
-CONTIKI=../../..
+CONTIKI=../contiki-iris-examples
 
 WITH_UIP6=1
 UIP_CONF_IPV6=1
