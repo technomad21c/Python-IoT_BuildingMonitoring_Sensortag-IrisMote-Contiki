@@ -41,19 +41,18 @@ class Gateway:
             #print(recv)
 
             data  = iris.convert(recv)  # converted into dictionary type
-            data['temperature'] = int(data['temperature'])
-            data['luminance'] = int(data['luminance'])
-            data['battery'] = int(data['battery'])
             print(data)
-            #print("Temperature: ", self.convertTemperature(int(data['temperature'])))
-            #print("Light: ", self.convertIlluminance(int(data['light'])))
-            #print("Battery: ", self.convertBattery(int(data['battery'])))
+            data['temperature'] = self.convertTemperature(int(data['temperature']))
+            data['luminance'] = self.convertIlluminance(int(data['luminance']))
+            data['battery'] = self.convertBattery(int(data['battery']))
 
+            data['sensortype'] = "iris"
+            sensorname_prefix = "E110-iris-0"
             datatemperature = [ {
                         "measurement": "temperature",
                         "tags": {
                             "sensor-type": data['sensortype'],
-                            "sensor-number": data['sensor-number'],
+                            "sensor-number": sensorname_prefix + str(data['sensorno']),
                         },
                         "field": {
                             "value": data['temperature'],
@@ -64,7 +63,7 @@ class Gateway:
                         "measurement": "luminance",
                         "tags": {
                             "sensor-type": data['sensortype'],
-                            "sensor-number": data['sensor-number'],
+                            "sensor-number": sensorname_prefix + str(data['sensorno']),
                         },
                         "field": {
                             "value": data['luminance'],
@@ -75,7 +74,7 @@ class Gateway:
                         "measurement": "battery",
                         "tags": {
                             "sensor-type": data['sensortype'],
-                            "sensor-number": data['sensor-number'],
+                            "sensor-number": sensorname_prefix + str(data['sensorno']),
                         },
                         "field": {
                             "value": data['battery'],
@@ -86,30 +85,18 @@ class Gateway:
                         "measurement": "E110", 
                         "tags": { 
                             "sensor-type": data['sensortype'],
-                            "sensor-number": data['sensor-number'],
+                            "sensor-number": sensorname_prefix + str(data['sensorno']),
                         }, 
                         "fields": {
                             "temperature": data['temperature'],
-                            "luminance": data['light'],
+                            "luminance": data['luminance'],
                             "battery": data['battery'],
                         } 
                     } ]
    
-            sensorData = [ {
-                        "measurement": "memory", 
-                        "tags": { 
-                            "sensor": 1
-                        }, 
-                        "fields": {
-                            "temperature": 21,
-                            "light": 700,
-                            "humidity": 50,
-                        }
-                    }
-                  ]
 
-            #self.client.write_points(sensorData) 
-            #print("Sensor data was sent to InflubDB")
+            self.client.write_points(dataE110)
+            print("Sensor data was sent to InflubDB")
     
     def convertTemperature(self, DN):
         Rthr = 10000 * (1023 - DN) / DN
@@ -119,12 +106,13 @@ class Gateway:
 
     def convertIlluminance(self, DN):
         EU = 100 * DN / 1023
-        return EU
+        return round(EU, 2)
 
     def convertBattery(self, ADC):
         v = 1.223  #voltage reference
         V = v * 1024 / ADC
-        return V
+        p = int(100 - (3.6 - round(V, 1)) * 10)
+        return p
 
     def initialize(self, propertyfile):
         self.setEnvVariables(propertyfile)
