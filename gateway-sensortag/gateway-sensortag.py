@@ -67,6 +67,17 @@ class Gateway:
             for sensortag in self.sensortags:
                 data = sensortag.read()
                 print(data)
+                datatemperature = [ {
+                        "measurement": "temperature", 
+                        "tags": { 
+                            "sensor-type": data['sensortype'], 
+                            "sensor-number": data['sensornumber'] 
+                        }, 
+                        "fields": {
+                            "value": data['temperature'],
+                        } 
+                    } ]
+   
                 datahumidity = [ {
                         "measurement": "humidity", 
                         "tags": { 
@@ -111,7 +122,7 @@ class Gateway:
                         } 
                     } ]
 
-                datae110= [ {
+                dataE110= [ {
                         "measurement": "E110", 
                         "tags": { 
                             "sensor-type": data['sensortype'], 
@@ -124,11 +135,12 @@ class Gateway:
                             "battery": data['battery'],
                         } 
                     } ]
+                self.client.write_points(datatemperature)
                 self.client.write_points(datahumidity)
                 self.client.write_points(databarometicpressure)
                 self.client.write_points(dataluminance)
                 self.client.write_points(databattery)
-                self.client.write_points(datae110)
+                self.client.write_points(dataE110)
             time.sleep(60)
     
     def initialize(self, propertyfile):
@@ -141,7 +153,7 @@ class Gateway:
 
 if __name__ == '__main__':
     print("Smart Building Monitoring starts...")
-    propertyfile = "gateway.properties" 
+    propertyfile = "../config/gateway.properties" 
     gw = Gateway()
     gw.initialize(propertyfile)
     gw.start()
