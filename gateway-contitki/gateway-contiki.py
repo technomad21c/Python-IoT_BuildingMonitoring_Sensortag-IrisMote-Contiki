@@ -21,6 +21,7 @@ class Gateway:
 
         self.DB_ADDR = env['db_addr']
         self.DB_PORT = env['db_port']
+        self.DB_DATABASE = env['db_database']
 
     def connectGateway(self):
         try:
@@ -31,7 +32,7 @@ class Gateway:
 
     def connectDB(self):
         self.client = InfluxDBClient(host=self.DB_ADDR, port=self.DB_PORT)
-        self.client.switch_database('test')
+        self.client.switch_database(self.DB_DATABASE)
 
     def send(self): 
         iris = IrisData()
@@ -54,7 +55,7 @@ class Gateway:
                             "sensor-type": data['sensortype'],
                             "sensor-number": sensorname_prefix + str(data['sensorno']),
                         },
-                        "field": {
+                        "fields": {
                             "value": data['temperature'],
                         }
                 } ]
@@ -65,7 +66,7 @@ class Gateway:
                             "sensor-type": data['sensortype'],
                             "sensor-number": sensorname_prefix + str(data['sensorno']),
                         },
-                        "field": {
+                        "fields": {
                             "value": data['luminance'],
                         }
                 } ]
@@ -76,7 +77,7 @@ class Gateway:
                             "sensor-type": data['sensortype'],
                             "sensor-number": sensorname_prefix + str(data['sensorno']),
                         },
-                        "field": {
+                        "fields": {
                             "value": data['battery'],
                         }
                 } ]
@@ -96,6 +97,9 @@ class Gateway:
    
 
             self.client.write_points(dataE110)
+            self.client.write_points(datatemperature)
+            self.client.write_points(dataluminance)
+            self.client.write_points(databattery)
             print("Sensor data was sent to InflubDB")
     
     def convertTemperature(self, DN):

@@ -41,8 +41,9 @@ class Gateway:
         self.light['period']  = env['UUID']['light']['period']
         self.light['format']  = env['UUID']['light']['format']
 
-        self.DB_ADDR = env['db_addr']
-        self.DB_PORT = env['db_port']
+        self.DB_ADDR     = env['db_addr']
+        self.DB_PORT     = env['db_port']
+        self.DB_DATABASE = env['db_database']
 
         for i in range(len(env['sensortags'])):
             sensortag = Sensortag()
@@ -60,7 +61,7 @@ class Gateway:
 
     def connectDB(self):
         self.client = InfluxDBClient(host=self.DB_ADDR, port=self.DB_PORT)
-        self.client.switch_database('test')
+        self.client.switch_database(self.DB_DATABASE)
 
     def send(self): 
         while(True):
@@ -129,6 +130,7 @@ class Gateway:
                             "sensor-number": data['sensornumber'] 
                         }, 
                         "fields": {
+                            "temperature": data['temperature'],
                             "humidity": data['humidity'],
                             "barometicpressure": data['barometicpressure'],
                             "luminance": data['luminance'],
