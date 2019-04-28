@@ -77,7 +77,8 @@ class Sensortag(object):
         self.data['humidity'] = round( -6.0 + 125.0 * ((rawH & 0xFFFC) / 65536.0), 1)
 
         (tL, tM, tH, pL, pM, pH) = struct.unpack(self.formatBarometer,self.dataBarometer.read()) 
-        baroTemp = (tH*65536 + tM*256 + tL) / 100.0
+        #baroTemp = (tH*65536 + tM*256 + tL) / 100.0
+        self.data['temperature'] = (tH*65536 + tM*256 + tL) / 100.0
         #baroPress = (pH*65536 + pM*256 + pL) / 100.0
         self.data['barometicpressure'] = round((pH*65536 + pM*256 + pL) / 100.0, 1)
 
@@ -94,15 +95,19 @@ class Sensortag(object):
         return self.data
 
 if __name__ == "__main__":
+    import sys
     from yamlreader import YamlReader
     yr = YamlReader()
-    dict = yr.read("gateway.properties")
+    dict = yr.read("../config/gateway.properties")
     for key, value in dict.items():
         print(key + " : " + str(value)) 
 
     st = Sensortag()
     st.setUUID(dict['UUID'])
-    st.setAddress(dict['sensortags'][0]['sensortag']['name'], dict['sensortags'][0]['sensortag']['address']) 
+    if len(sys.argv) > 1:
+        st.setAddress(dict['sensortags'][int(sys.argv[1])-1]['sensortag']['name'], dict['sensortags'][int(sys.argv[1])-1]['sensortag']['address']) 
+    else:
+        st.setAddress(dict['sensortags'][0]['sensortag']['name'], dict['sensortags'][0]['sensortag']['address']) 
 
     st.connect()
     st.enable()
