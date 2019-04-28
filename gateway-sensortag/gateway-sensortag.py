@@ -90,14 +90,14 @@ class Gateway:
                         } 
                     } ]
    
-                databarometicpressure = [ {
-                        "measurement": "barometicpressure", 
+                databarometrnicpressure = [ {
+                        "measurement": "barometricpressure", 
                         "tags": { 
                             "sensor-type": data['sensortype'], 
                             "sensor-number": data['sensornumber'] 
                         }, 
                         "fields": {
-                            "value": data['barometicpressure'],
+                            "value": data['barometricpressure'],
                         } 
                     } ]
 
@@ -132,14 +132,14 @@ class Gateway:
                         "fields": {
                             "temperature": data['temperature'],
                             "humidity": data['humidity'],
-                            "barometicpressure": data['barometicpressure'],
+                            "barometicpressure": data['barometricpressure'],
                             "luminance": data['luminance'],
                             "battery": data['battery'],
                         } 
                     } ]
                 self.client.write_points(datatemperature)
                 self.client.write_points(datahumidity)
-                self.client.write_points(databarometicpressure)
+                self.client.write_points(databarometricpressure)
                 self.client.write_points(dataluminance)
                 self.client.write_points(databattery)
                 self.client.write_points(dataE110)

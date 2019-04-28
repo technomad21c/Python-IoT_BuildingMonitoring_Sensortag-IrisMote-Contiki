@@ -80,7 +80,7 @@ class Sensortag(object):
         #baroTemp = (tH*65536 + tM*256 + tL) / 100.0
         self.data['temperature'] = (tH*65536 + tM*256 + tL) / 100.0
         #baroPress = (pH*65536 + pM*256 + pL) / 100.0
-        self.data['barometicpressure'] = round((pH*65536 + pM*256 + pL) / 100.0, 1)
+        self.data['barometricpressure'] = round((pH*65536 + pM*256 + pL) / 100.0, 1)
 
         raw = struct.unpack(self.formatLight, self.dataLight.read())[0]
         m = raw & 0xFFF
