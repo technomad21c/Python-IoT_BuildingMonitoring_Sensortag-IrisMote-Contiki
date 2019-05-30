@@ -17,6 +17,8 @@ class Sensortag(object):
         
         self.data = {}
 
+        self.prevhumidity = 0
+
     def setUUID(self, UUID):
         self.UUID = UUID
 
@@ -72,9 +74,13 @@ class Sensortag(object):
        
     def read(self):
         (rawT, rawH)  = struct.unpack(self.formatHumidity, self.dataHumidity.read()) 
-        humiTemp = -46.85 + 175.72 * (rawT / 65536.0)
-        #humiRH = -6.0 + 125.0 * ((rawH & 0xFFFC) / 65536.0)
-        self.data['humidity'] = round( -6.0 + 125.0 * ((rawH & 0xFFFC) / 65536.0), 1)
+        #humiTemp = -40.0 + 165.0 * (rawT / 65536.0)
+        humidity = round( 100.0 * (rawH / 65536.0), 1)  
+        if humidity < 100:
+            self.data['humidity'] = humidity
+            self.prevhumidity = humidity
+        else:
+            self.data['humidity'] = self.prevhumidity
 
         (tL, tM, tH, pL, pM, pH) = struct.unpack(self.formatBarometer,self.dataBarometer.read()) 
         #baroTemp = (tH*65536 + tM*256 + tL) / 100.0
